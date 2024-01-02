@@ -19,3 +19,6 @@
 
 # Go workspace file
 go.work
+
+
+istio-1.20.0-linux-amd64.tar.gz
