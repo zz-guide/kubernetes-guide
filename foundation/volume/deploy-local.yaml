@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-local
+  namespace: zzns
+  labels:
+    app: zz-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zz-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: zz-harbor
+      volumes:
+      - name: zz-local
+        local:
+          path: /data/zz-local
+      containers:
+      - name: zz-write
+        image: zz.harbor.com/zz-public/library/busybox:latest
+        imagePullPolicy: IfNotPresent
+        command: ["sh","-c","echo 'hello world' >> /data/hello && tail -f /data/hello"]
+        volumeMounts:
+        - name: zz-local
+          mountPath: /data/zz-local

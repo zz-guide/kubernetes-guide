@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zz-service-clusterip
+  namespace: zzns
+spec:
+  selector:
+   app: zz-app
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080

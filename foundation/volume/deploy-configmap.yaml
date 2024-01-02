@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-configmap
+  namespace: zzns
+  labels:
+    app: zz-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zz-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: zz-harbor
+      volumes:
+      - name: zz-configmap
+        configMap:
+          name: zz-configmap
+      containers:
+      - name: zz-write
+        image: zz.harbor.com/zz-public/library/busybox:latest
+        imagePullPolicy: IfNotPresent
+        command: ['sh', '-c', 'echo "The app is running!" && tail -f /dev/null']
+        volumeMounts:
+        - name: zz-configmap
+          mountPath: /data/configMap

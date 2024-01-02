@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-role
+  namespace: dev
+rules:
+  - apiGroups: [""] # 支持的API组列表，""空字符串，表示核心API群
+    resources: ["pods"] # 支持的资源对象列表
+    verbs: ["get","watch","list"]
