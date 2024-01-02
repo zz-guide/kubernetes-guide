@@ -1,0 +1,63 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zz-hello
+  namespace: zz
+  labels:
+    app: zz-hello
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zz-hello
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: zz-hello
+      labels:
+        app: zz-hello
+    spec:
+      containers:
+      - name: zz-hello
+        image: zz.harbor.com/zzimage/zz-hello:v1.0.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          tcpSocket:
+            port: 12000
+          initialDelaySeconds: 5
+          periodSeconds: 3
+          failureThreshold: 10
+          timeoutSeconds: 1
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 12000
+          initialDelaySeconds: 5
+          periodSeconds: 3
+          failureThreshold: 10
+          timeoutSeconds: 1
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: harborsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-svc
+  namespace: zz
+spec:
+  externalTrafficPolicy: Cluster
+  selector:
+   app: zz-hello
+  type: NodePort
+  ports:
+  - name: zz-hello-http
+    protocol: TCP
+    port: 12000
+    targetPort: 12000
+    nodePort: 31000 # 30000-32767, 虚拟端口
+---

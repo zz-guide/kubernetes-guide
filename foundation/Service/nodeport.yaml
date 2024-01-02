@@ -1,12 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: zz-service-nodeport
-  namespace: zzns
+  name: svc-nodeport
+  namespace: zz
 spec:
   externalTrafficPolicy: Cluster
   selector:
-   app: zz-app
+   app: zz
+  type: NodePort
   ports:
   - name: admin-port
     protocol: TCP
@@ -18,4 +19,3 @@ spec:
     port: 80
     targetPort: 80
     nodePort: 30009
-  type: NodePort
