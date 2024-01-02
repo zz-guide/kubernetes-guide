@@ -1,2 +1,2 @@
-# kubernetes-env
-kubernetes 工作环境
+# kubernetes-guide
+练习kubernetes yaml编写

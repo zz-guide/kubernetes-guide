@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-hostpath
+  namespace: zzns
+  labels:
+    app: zz-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zz-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: zz-harbor
+      volumes:
+      - name: zz-hostpath
+        hostPath:
+          path: /zzhostpath
+          type: DirectoryOrCreate
+      containers:
+      - name: zz-write
+        image: zz.harbor.com/zz-public/library/busybox:latest
+        imagePullPolicy: IfNotPresent
+        command: ["sh","-c","echo 'hello world' >> /data/hello && tail -f /data/hello"]
+        volumeMounts:
+        - name: zz-hostpath
+          mountPath: /data
+      - name: zz-read
+        image: zz.harbor.com/zz-public/library/busybox:latest
+        imagePullPolicy: IfNotPresent
+        command: ["sh","-c","tail -f /data/hello"]
+        volumeMounts:
+        - name: zz-hostpath
+          mountPath: /data

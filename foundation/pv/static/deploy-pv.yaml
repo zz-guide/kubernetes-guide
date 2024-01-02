@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zz-deploy-pv
+  namespace: zzns
+  labels:
+    app: zz-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zz-app
+  template:
+    metadata:
+      labels:
+        app: zz-app
+    spec:
+      volumes:
+      - name: zz-deploy-pv-volume
+        persistentVolumeClaim:
+          claimName: zz-pvc-001
+      containers:
+      - name: nginx
+        image: zz.harbor.com/zz-public/library/nginx:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: zz-deploy-pv-volume
+          mountPath: /usr/share/nginx/html
+          subPath: html

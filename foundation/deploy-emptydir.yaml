@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-emptydir
+  namespace: zzns
+  labels:
+    app: zz-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zz-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: zz-harbor
+      volumes:
+      - name: zz-emptydir
+        emptyDir:
+          sizeLimit: 500Mi
+      containers:
+      - name: zz-write
+        image: zz.harbor.com/zz-public/library/busybox:latest
+        imagePullPolicy: IfNotPresent
+        command: ["sh","-c","for i in {1..100};do echo $i >> /data/hello;sleep 1;done; tail -f /data/hello;"]
+        volumeMounts:
+        - name: zz-emptydir
+          mountPath: /data
+      - name: zz-read
+        image: zz.harbor.com/zz-public/library/busybox:latest
+        imagePullPolicy: IfNotPresent
+        command: ["sh","-c","tail -f /data/hello"]
+        volumeMounts:
+        - name: zz-emptydir
+          mountPath: /data

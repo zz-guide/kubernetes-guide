@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zz-hello-deploy-livenessprobe
+  namespace: zzns
+  labels:
+    app: zz-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zz-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      containers:
+      - name: hello
+        image: zz.harbor.com/zz/zz-hello:v3.0.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 3
+          failureThreshold: 10
+          timeoutSeconds: 1
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: zz-harbor
