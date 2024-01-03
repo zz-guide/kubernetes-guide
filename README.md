@@ -6,9 +6,13 @@
 - [x] 测试ns
 - [x] 测试service-clusterip
 - [x] 测试service-nodeport
-- [ ] 测试rc
-- [ ] 测试rs
-- [ ] 测试deploy
+- [x] 测试rc
+- [x] 测试rs
+- [x] 测试deploy
+- [ ] 测试deploy set image
+- [ ] 测试deploy rollout
+
+
 - [ ] 测试volume
 - [ ] 测试pv
 - [ ] 测试pvc

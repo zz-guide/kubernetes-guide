@@ -1,22 +1,23 @@
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
-  name: nginx
+  name: nginx-rs
+  namespace: zz
   labels:
-    tier: frontend
+    tier: proxy
 spec:
   replicas: 3
   selector:
     matchLabels:
-      tier: frontend
+      tier: proxy
   template:
     metadata:
       name: nginx
       labels:
-        tier: frontend
+        tier: proxy
     spec:
       containers:
       - name: nginx
-        image: nginx
+        image: nginx:alpine
         ports:
         - containerPort: 80

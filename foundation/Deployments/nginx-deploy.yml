@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deploy
+  namespace: zz
+  labels:
+    app: nginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-nginx
+  namespace: zz
+spec:
+  externalTrafficPolicy: Cluster
+  selector:
+   app: nginx
+  type: NodePort
+  ports:
+  - name: http-port
+    protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 31000 # 30000-32767, 虚拟端口
