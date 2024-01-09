@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: zz-hello-deploy-rollingupdate
-  namespace: zzns
+  name: deploy-recreate
+  namespace: zz
   labels:
     app: zz-app
 spec:
@@ -11,20 +11,18 @@ spec:
     matchLabels:
       app: zz-app
   strategy:
+    type: Recreate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 1
+      maxUnavailable: 0
   template:
     metadata:
       name: zz-app
       labels:
         app: zz-app
     spec:
+      restartPolicy: Always
       containers:
       - name: hello
-        image: zz.harbor.com/zz/zz-hello:v1.0.0
+        image: registry.cn-hangzhou.aliyuncs.com/zzimage/zz-hello:v1.0.0
         imagePullPolicy: IfNotPresent
-      restartPolicy: Always
-      imagePullSecrets:
-        - name: zz-harbor
-      

@@ -6,7 +6,17 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: ingress.my.nginx
+  - host: ingress.my.nginx.cn
+    http:
+      paths:
+      - backend:
+          service:
+            name: svc-my-nginx
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  - host: ingress.my.nginx.com
     http:
       paths:
       - backend:

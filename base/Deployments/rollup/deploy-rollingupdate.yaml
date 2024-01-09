@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-rollingupdate
+  namespace: zz
+  annotations:
+    deployment.kubernetes.io/revision: "2"
+    kubernetes.io/change-cause: "zz-hello-v2.0.0"
+  labels:
+    app: zz-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zz-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: hello
+        image: registry.cn-hangzhou.aliyuncs.com/zzimage/zz-hello:v2.0.0
+        imagePullPolicy: IfNotPresent

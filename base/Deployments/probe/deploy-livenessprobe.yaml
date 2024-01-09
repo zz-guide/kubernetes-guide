@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-livenessprobe
+  namespace: zz
+  labels:
+    app: zz-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zz-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: hello
+        image: registry.cn-hangzhou.aliyuncs.com/zzimage/zz-hello:v1.0.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 12000
+          initialDelaySeconds: 1    # 容器启动后多久开始探测
+          timeoutSeconds: 4          # 表示容器必须在2s内做出相应反馈给probe，否则视为探测失败
+          periodSeconds: 10          # 探测周期，每30s探测一次
+          successThreshold: 1        # 连续探测1次成功表示成功
+          failureThreshold: 3        # 连续探测3次失败表示失败
