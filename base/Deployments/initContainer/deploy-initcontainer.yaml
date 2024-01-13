@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deploy-full-probe
+  name: deploy-initcontainer
   namespace: zz
   labels:
     app: zz-app
@@ -16,11 +16,39 @@ spec:
       labels:
         app: zz-app
     spec:
+      volumes:
+      - name: zz-data-emptydir
+        emptyDir:
+          sizeLimit: 500Mi
+      initContainers:
+      - name: init-touch
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: zz-data-emptydir
+          mountPath: /myshare
+        command:
+        - sh
+        - -c
+        - |-
+          #!/bin/sh
+          touch /myshare/test.txt
+          echo 123 >> /myshare/test.txt
+      - name: echo
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - for i in `seq 1 10`; do echo $i; sleep 1; done
       restartPolicy: Always
       containers:
       - name: hello
         image: registry.cn-hangzhou.aliyuncs.com/zzimage/zz-hello:v1.0.0
         imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: zz-data-emptydir
+          mountPath: /myshare
         startupProbe:
           httpGet:
             path: /health

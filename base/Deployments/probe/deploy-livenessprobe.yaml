@@ -10,10 +10,6 @@ spec:
   selector:
     matchLabels:
       app: zz-app
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
   template:
     metadata:
       name: zz-app
@@ -29,8 +25,7 @@ spec:
           httpGet:
             path: /health
             port: 12000
-          initialDelaySeconds: 1    # 容器启动后多久开始探测
-          timeoutSeconds: 4          # 表示容器必须在2s内做出相应反馈给probe，否则视为探测失败
-          periodSeconds: 10          # 探测周期，每30s探测一次
-          successThreshold: 1        # 连续探测1次成功表示成功
-          failureThreshold: 3        # 连续探测3次失败表示失败
+          initialDelaySeconds: 1     # 容器启动后多久开始探测
+          timeoutSeconds: 4          # 表示容器必须在timeoutSeconds秒内做出相应反馈给probe，否则视为探测失败
+          periodSeconds: 10          # 探测周期，每periodSeconds秒探测一次
+          failureThreshold: 3        # 连续探测failureThreshold次失败表示失败

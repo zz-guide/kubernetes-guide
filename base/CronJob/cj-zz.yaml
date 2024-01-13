@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cj-zz
+  namespace: zz
+spec:
+  schedule: '*/1 * * * *'
+  successfulJobsHistoryLimit: 10 # 保留执行成功的历史记录次数，默认值是3。
+  failedJobsHistoryLimit: 10 # 保留执行失败的历史记录次数，默认值是1。
+  startingDeadlineSeconds: 60
+  jobTemplate:
+    metadata:
+      name: zz-cj
+    spec:
+      activeDeadlineSeconds: 50 # 设置了 Pod 最大运行时间为 5 秒，如果超过这个时间就会被 Kubernetes 强制删除。
+      template:
+        metadata:
+        spec:
+          terminationGracePeriodSeconds: 30 #当需要关闭容器时，立即杀死容器而不等待默认的30秒优雅停机时长。
+          restartPolicy: OnFailure
+          containers:
+          - name: zz-cj
+            image: busybox:latest
+            command:
+            - sh
+            - -c
+            - echo `date`;sleep 10

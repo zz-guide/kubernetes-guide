@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-cm-env
+  namespace: zz
+  labels:
+    app: zz-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zz-app
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: busybox
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MY_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: zz-cm-env
+              key: MY_NAME
+        - name: MY_AGE
+          valueFrom:
+            configMapKeyRef:
+              name: zz-cm-env
+              key: MY_AGE
+        command: [ "/bin/sh","-c","env && sleep infinity;"]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zz-cm-env
+  labels:
+    app: zz-app
+data:
+  MY_NAME: "仔仔"
+  MY_AGE: "29"

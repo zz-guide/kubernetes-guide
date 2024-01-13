@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zz-nginx-conf
+  labels:
+    app: zz-app
+data:
+  nginx.conf: |
+    server {
+     server_name www.nginx.com;
+     listen 80;
+     root /home/nginx/www/
+    }

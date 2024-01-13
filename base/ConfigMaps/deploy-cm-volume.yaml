@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-cm-volume
+  namespace: zz
+  labels:
+    app: zz-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zz-app
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      restartPolicy: Always
+      volumes:
+      - name: config-volume
+        configMap:
+          name: zz-cm-volume
+      containers:
+      - name: busybox
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: config-volume
+          mountPath: /myconfig
+        command: [ "/bin/sh","-c","cat /myconfig"]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zz-cm-volume
+  labels:
+    app: zz-app
+data:
+  MY_NAME: "仔仔"
+  MY_AGE: "29"

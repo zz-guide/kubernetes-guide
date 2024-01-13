@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sts-redis
+  namespace: zz
+  labels:
+    app: zz-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zz-app
+  template:
+    metadata:
+      name: zz-app
+      labels:
+        app: zz-app
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: hello
+        image: redis:latest
+        imagePullPolicy: IfNotPresent
+       
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-headless-redis
+  namespace: zz
+spec:
+  selector:
+    app: my-redis
+  clusterIP: None
+  ports:
+  - name: redis-port
+    protocol: TCP
+    port: 6379
+    targetPort: 6379

@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-zz
+  namespace: zz
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 20 # 任务完成以后，20s自动清理Pod
+  template:
+    metadata:
+      name: zz-cj
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: zz-cj
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - echo `date`;sleep 10
