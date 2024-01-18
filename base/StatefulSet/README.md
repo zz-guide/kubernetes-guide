@@ -1,0 +1,11 @@
+# 目标
+- [x] 通过redis+sentinel案例，熟悉statefulset
+- [x] configMap 保存配置文件模板
+- [x] secret 保存密码
+- [x] initContainers 用来做初始化工作，指定主从复制关系
+- [x] nfs 集中管理存储
+- [x] 模拟宕机，验证sentinel
+- [x] 扩容，缩容
+- [x] 升级策略
+- [x] 备份数据
+- [x] 日志收集

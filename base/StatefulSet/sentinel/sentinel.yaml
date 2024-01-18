@@ -1,0 +1,139 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-headless
+  namespace: zz-redis
+spec:
+  selector:
+    app: redis-sentinel
+  clusterIP: None
+  ports:
+  - name: redis
+    protocol: TCP
+    port: 26379
+    targetPort: 26379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-access
+  namespace: zz-redis
+  labels:
+    app: redis
+spec:
+  selector:
+    app: redis-sentinel
+  type: NodePort
+  ports:
+  - name: redis-sentinel
+    port: 26379
+    targetPort: 26379
+    nodePort: 32000
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sentinel
+  namespace: zz-redis
+  labels:
+    app: sentinel
+spec:
+  replicas: 3
+  serviceName: sentinel-headless
+  selector:
+    matchLabels:
+      app: sentinel
+  volumeClaimTemplates:
+  - metadata:
+      name: sentinel-data
+    spec:
+      storageClassName: managed-nfs-storage
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 500Mi
+  template:
+    metadata:
+      name: sentinel
+      labels:
+        app: sentinel
+    spec:
+      restartPolicy: Always
+      volumes:
+      - name: sentinel-conf
+        configMap:
+          name: zz-redis
+          items:
+          - key: sentinel-conf
+            path: sentinel-conf
+      - name: redis-secret
+        secret:
+          secretName: zz-redis
+          items:
+          - key: password
+            path: password
+      - name: redis-config
+        emptyDir: {}
+      initContainers:
+      - name: sentinel-init
+        image: docker.m.daocloud.io/redis/redis-stack-server:latest
+        command:
+        - bash
+        - -c
+        - |-
+          #!/usr/bin/env bash
+          echo "复制sentinel.conf到指定位置(不同镜像，位置不同)"
+          cp /tmp/redis/conf/sentinel-conf /etc/redis/sentinel.conf
+          REDIS_PASSWORD=$(cat /tmp/redis/secret/password)
+          nodes=redis-0,redis-1,redis-2,redis-3
+          echo "循环节点直到查到master信息"
+          for i in ${nodes//,/ }
+          do
+              # 按规则拼接全域名访问
+              NODE_NAME="$i.redis-headless.zz-redis.svc.cluster.local"
+              MASTER=$(redis-cli --no-auth-warning --raw -h $NODE_NAME -a $REDIS_PASSWORD info replication | tr -d '\r' | awk '{print $1}' | grep master_host: | cut -d ":" -f2)
+              if [ "$MASTER" = "" ]; then
+                  echo "no master info found in $NODE_NAME"
+                  MASTER=""
+              else
+                  echo "found master info"
+                  break
+              fi
+          done
+
+          echo "修改sentinel.conf"
+          cat >> /etc/redis/sentinel.conf << EOF
+
+          SENTINEL monitor mymaster $MASTER 6379 2
+          SENTINEL resolve-hostnames yes
+          SENTINEL announce-hostnames yes
+          SENTINEL down-after-milliseconds mymaster 5000
+          SENTINEL failover-timeout mymaster 60000
+          SENTINEL parallel-syncs mymaster 1
+          SENTINEL auth-pass mymaster $REDIS_PASSWORD
+          EOF
+
+          cat /etc/redis/sentinel.conf
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis/
+        - name: sentinel-conf
+          mountPath: /tmp/redis/conf
+        - name: redis-secret
+          mountPath: /tmp/redis/secret
+      containers:
+      - name: sentinel
+        image: docker.m.daocloud.io/redis/redis-stack-server:latest
+        imagePullPolicy: IfNotPresent
+        command: ["redis-sentinel"]
+        args: ["/etc/redis/sentinel.conf"]
+        ports:
+        - name: sentinel
+          containerPort: 26379
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis/
+        - name: sentinel-data
+          mountPath: /data
+          subPath: data

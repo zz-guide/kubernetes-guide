@@ -1,0 +1,41 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: box-headless
+  namespace: zz-redis
+spec:
+  selector:
+    app: box
+  clusterIP: None
+  ports:
+  - name: box
+    protocol: TCP
+    port: 7777
+    targetPort: 7777
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: box
+  namespace: zz-redis
+  labels:
+    app: box
+spec:
+  replicas: 1
+  serviceName: box-headless
+  selector:
+    matchLabels:
+      app: box
+  template:
+    metadata:
+      name: box
+      labels:
+        app: box
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: sentinel
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        command: [ "/bin/sh","-c","env && sleep infinity;"]
